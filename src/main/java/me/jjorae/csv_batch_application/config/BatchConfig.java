@@ -21,7 +21,7 @@ import me.jjorae.csv_batch_application.exception.ParsingException;
 import me.jjorae.csv_batch_application.exception.ValidationException;
 
 @Configuration
-public class BatchConfiguration {
+public class BatchConfig {
     @Bean
     public Job job(JobRepository jobRepository, Step step1, JobCompletionNotificationListener listener) {
         return new JobBuilder("job1", jobRepository)
