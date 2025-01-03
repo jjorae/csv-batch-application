@@ -3,8 +3,6 @@ package me.jjorae.csv_batch_application.config.listener;
 import org.springframework.batch.core.ExitStatus;
 import org.springframework.batch.core.StepExecution;
 import org.springframework.batch.core.StepExecutionListener;
-import org.springframework.core.task.TaskExecutor;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
 
 import lombok.RequiredArgsConstructor;
@@ -14,8 +12,6 @@ import lombok.extern.slf4j.Slf4j;
 @Component
 @RequiredArgsConstructor
 public class StepExceptionListener implements StepExecutionListener {
-    private final TaskExecutor taskExecutor;
-
     @Override
     public void beforeStep(StepExecution stepExecution) {
         log.info("Step '{}' 시작", stepExecution.getStepName());
@@ -33,9 +29,6 @@ public class StepExceptionListener implements StepExecutionListener {
             log.error("Step 실행 중 발생한 예외들:");
             stepExecution.getFailureExceptions()
                 .forEach(throwable -> log.error("예외 발생: ", throwable));
-            if (taskExecutor instanceof ThreadPoolTaskExecutor) {
-                ((ThreadPoolTaskExecutor) taskExecutor).shutdown();
-            }
         }
         
         return stepExecution.getExitStatus();
