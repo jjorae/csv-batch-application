@@ -5,7 +5,7 @@ plugins {
 }
 
 group = 'me.jjorae'
-version = '0.0.1-SNAPSHOT'
+version = '0.0.1'
 
 java {
 	toolchain {
@@ -37,4 +37,12 @@ dependencies {
 
 tasks.named('test') {
 	useJUnitPlatform()
+}
+
+tasks.bootJar {
+	enabled = true
+}
+
+tasks.jar {
+	enabled = false
 }

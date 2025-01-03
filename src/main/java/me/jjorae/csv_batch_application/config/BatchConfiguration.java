@@ -7,6 +7,7 @@ import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.item.database.JdbcBatchItemWriter;
 import org.springframework.batch.item.file.FlatFileItemReader;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
@@ -37,7 +38,8 @@ public class BatchConfiguration {
         CsvItemProcessor processor, 
         JdbcBatchItemWriter<GeneralRestaurantData> writer,
         StepExceptionListener stepExceptionListener,
-        CustomSkipListener customSkipListener
+        CustomSkipListener customSkipListener,
+        @Value("${batch.skip-limit:10}") int skipLimit
     ) {
         return new StepBuilder("step1", jobRepository)
             .<GeneralRestaurantRawData, GeneralRestaurantData> chunk(100, transactionManager)
@@ -45,7 +47,7 @@ public class BatchConfiguration {
             .processor(processor)
             .writer(writer)
             .faultTolerant()
-            .skipLimit(10)
+            .skipLimit(skipLimit)
             .skip(ValidationException.class)
             .skip(ParsingException.class)
             .listener(stepExceptionListener)
