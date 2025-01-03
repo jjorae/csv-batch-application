@@ -57,7 +57,7 @@ java -jar build/libs/csv-batch-application-0.0.1.jar inputFile=/path/to/your/csv
 
 데이터베이스 테이블은 애플리케이션 시작 시 자동으로 생성됩니다. 스키마 정의는 다음 파일을 참고하세요:
 
-`src/main/resources/schema-all.sql`
+[src/main/resources/schema-all.sql](src/main/resources/schema-all.sql)
 
 배치용 테이블은 아래 옵션을 통해 항상 생성하도록 설정되어 있습니다. 상황에 맞게 `always`, `embeded`, `never`로 변경하여 사용하면 됩니다.
 
