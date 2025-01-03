@@ -14,9 +14,13 @@ import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import me.jjorae.csv_batch_application.config.ItemProcessorConfig.CsvItemProcessor;
+import me.jjorae.csv_batch_application.config.listener.CustomSkipListener;
 import me.jjorae.csv_batch_application.config.listener.JobCompletionNotificationListener;
+import me.jjorae.csv_batch_application.config.listener.StepExceptionListener;
 import me.jjorae.csv_batch_application.dto.GeneralRestaurantData;
 import me.jjorae.csv_batch_application.dto.GeneralRestaurantRawData;
+import me.jjorae.csv_batch_application.exception.ParsingException;
+import me.jjorae.csv_batch_application.exception.ValidationException;
 
 @Configuration
 public class BatchConfiguration {
@@ -29,12 +33,26 @@ public class BatchConfiguration {
     }
 
     @Bean
-    public Step step1(JobRepository jobRepository, DataSourceTransactionManager transactionManager, FlatFileItemReader<GeneralRestaurantRawData> reader, CsvItemProcessor processor, JdbcBatchItemWriter<GeneralRestaurantData> writer) {
+    public Step step1(
+        JobRepository jobRepository, 
+        DataSourceTransactionManager transactionManager, 
+        FlatFileItemReader<GeneralRestaurantRawData> reader, 
+        CsvItemProcessor processor, 
+        JdbcBatchItemWriter<GeneralRestaurantData> writer,
+        StepExceptionListener stepExceptionListener,
+        CustomSkipListener customSkipListener
+    ) {
         return new StepBuilder("step1", jobRepository)
             .<GeneralRestaurantRawData, GeneralRestaurantData> chunk(100, transactionManager)
             .reader(reader)
             .processor(processor)
             .writer(writer)
+            .faultTolerant()
+            .skipLimit(10)
+            .skip(ValidationException.class)
+            .skip(ParsingException.class)
+            .listener(stepExceptionListener)
+            .listener(customSkipListener)
             .taskExecutor(taskExecutor())
             .build();
     }
@@ -42,10 +60,12 @@ public class BatchConfiguration {
     @Bean
     public TaskExecutor taskExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        executor.setCorePoolSize(10);                                  
+        executor.setCorePoolSize(1);                                  
         executor.setMaxPoolSize(10);
         executor.setKeepAliveSeconds(30);
         executor.setThreadNamePrefix("batch-thread-");
+        executor.setWaitForTasksToCompleteOnShutdown(true);
+        executor.setAllowCoreThreadTimeOut(true);
         executor.initialize();
         return executor;
     }

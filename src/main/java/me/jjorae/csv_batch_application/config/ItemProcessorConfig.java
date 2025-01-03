@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 
 import org.springframework.batch.item.ItemProcessor;
 import org.springframework.context.annotation.Bean;
@@ -13,6 +14,7 @@ import org.springframework.util.StringUtils;
 import lombok.extern.slf4j.Slf4j;
 import me.jjorae.csv_batch_application.dto.GeneralRestaurantData;
 import me.jjorae.csv_batch_application.dto.GeneralRestaurantRawData;
+import me.jjorae.csv_batch_application.exception.ParsingException;
 
 @Configuration
 public class ItemProcessorConfig {
@@ -79,7 +81,7 @@ public class ItemProcessorConfig {
                 .traditionalMainFood(item.getTraditionalMainFood())
                 .website(item.getWebsite())
                 .build();
-            log.info("Converting raw data. {} => {}", item, data);
+            log.debug("Converting raw data. {} => {}", item, data);
             return data;
         }
 
@@ -89,9 +91,9 @@ public class ItemProcessorConfig {
             }
             try {
                 return LocalDate.parse(value.trim(), DATE_FORMATTER);
-            } catch (Exception e) {
-                log.warn("Failed to parse date: {}", value);
-                return null;
+            } catch (DateTimeParseException e) {
+                log.error("Failed to parse date: {}", value);
+                throw new ParsingException(value, e);
             }
         }
 
@@ -101,9 +103,9 @@ public class ItemProcessorConfig {
             }
             try {
                 return LocalDateTime.parse(value.trim(), DATETIME_FORMATTER);
-            } catch (Exception e) {
+            } catch (DateTimeParseException e) {
                 log.warn("Failed to parse datetime: {}", value);
-                return null;
+                throw new ParsingException(value, e);
             }
         }
 
@@ -114,8 +116,8 @@ public class ItemProcessorConfig {
             try {
                 return Integer.parseInt(value.trim());
             } catch (NumberFormatException e) {
-                log.warn("Failed to parse integer: {}", value);
-                return null;
+                log.error("Failed to parse integer: {}", value);
+                throw new ParsingException(value, e);
             }
         }
 
@@ -126,8 +128,8 @@ public class ItemProcessorConfig {
             try {
                 return new BigDecimal(value.trim());
             } catch (NumberFormatException e) {
-                log.warn("Failed to parse decimal: {}", value);
-                return null;
+                log.error("Failed to parse decimal: {}", value);
+                throw new ParsingException(value, e);
             }
         }
     }
