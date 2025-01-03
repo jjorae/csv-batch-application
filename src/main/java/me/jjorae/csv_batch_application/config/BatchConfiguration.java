@@ -9,10 +9,7 @@ import org.springframework.batch.item.database.JdbcBatchItemWriter;
 import org.springframework.batch.item.file.FlatFileItemReader;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.task.TaskExecutor;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
-
 import me.jjorae.csv_batch_application.config.ItemProcessorConfig.CsvItemProcessor;
 import me.jjorae.csv_batch_application.config.listener.CustomSkipListener;
 import me.jjorae.csv_batch_application.config.listener.JobCompletionNotificationListener;
@@ -53,20 +50,6 @@ public class BatchConfiguration {
             .skip(ParsingException.class)
             .listener(stepExceptionListener)
             .listener(customSkipListener)
-            .taskExecutor(taskExecutor())
             .build();
-    }
-
-    @Bean
-    public TaskExecutor taskExecutor() {
-        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        executor.setCorePoolSize(1);                                  
-        executor.setMaxPoolSize(10);
-        executor.setKeepAliveSeconds(30);
-        executor.setThreadNamePrefix("batch-thread-");
-        executor.setWaitForTasksToCompleteOnShutdown(true);
-        executor.setAllowCoreThreadTimeOut(true);
-        executor.initialize();
-        return executor;
     }
 }
