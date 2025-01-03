@@ -39,10 +39,11 @@ public class BatchConfiguration {
         JdbcBatchItemWriter<GeneralRestaurantData> writer,
         StepExceptionListener stepExceptionListener,
         CustomSkipListener customSkipListener,
+        @Value("${batch.chunk-size:1000}") int chunkSize,
         @Value("${batch.skip-limit:1000}") int skipLimit
     ) {
         return new StepBuilder("step1", jobRepository)
-            .<GeneralRestaurantRawData, GeneralRestaurantData> chunk(100, transactionManager)
+            .<GeneralRestaurantRawData, GeneralRestaurantData> chunk(chunkSize, transactionManager)
             .reader(reader)
             .processor(processor)
             .writer(writer)
