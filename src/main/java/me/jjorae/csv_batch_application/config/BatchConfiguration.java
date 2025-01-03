@@ -39,19 +39,19 @@ public class BatchConfiguration {
         JdbcBatchItemWriter<GeneralRestaurantData> writer,
         StepExceptionListener stepExceptionListener,
         CustomSkipListener customSkipListener,
-        @Value("${batch.skip-limit:10}") int skipLimit
+        @Value("${batch.skip-limit:1000}") int skipLimit
     ) {
         return new StepBuilder("step1", jobRepository)
             .<GeneralRestaurantRawData, GeneralRestaurantData> chunk(100, transactionManager)
             .reader(reader)
             .processor(processor)
             .writer(writer)
+            .listener(stepExceptionListener)
             .faultTolerant()
+            .listener(customSkipListener)
             .skipLimit(skipLimit)
             .skip(ValidationException.class)
             .skip(ParsingException.class)
-            .listener(stepExceptionListener)
-            .listener(customSkipListener)
             .build();
     }
 }
